@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const socket = io.connect('http://' + document.domain + ':' + location.port);
+
+            // Handle message submission
+            document.querySelector('#send-btn').onclick = () => {
+                const message = document.querySelector('#message').value;
+                const username = document.querySelector('#username').value;
+
+                if (message.trim() !== '') {
+                    socket.send({'username': username, 'message': message});
+                    document.querySelector('#message').value = '';
+                }
+            };
+
+            // Append new messages to chat window
+            socket.on('message', data => {
+                const chatWindow = document.querySelector('#chat');
+                const newMessage = <p><strong>${data.username}</strong>: ${data.message}</p>;
+                chatWindow.innerHTML += newMessage;
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Real-Time Chat Application</h1>
+    <div>
+        <label for="username">Username: </label>
+        <input type="text" id="username" required>
+    </div>
+    <div id="chat" style="border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll;">
+        {% for message in messages %}
+        <p><strong>{{ message.username }}</strong>: {{ message.message }}</p>
+        {% endfor %}
+    </div>
+    <div>
+        <input type="text" id="message" placeholder="Type a message...">
+        <button id="send-btn">Send</button>
+    </div>
+</body>
+</html>
